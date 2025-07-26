@@ -1,0 +1,68 @@
+name: Build
+on: 
+  push:
+    branches: 
+      - main
+      - develop
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Linting and TypeCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+      - run: npm install
+      - run: npm run lint-ci
+        if: ${{ always() }}
+      - run: npm run typecheck
+        if: ${{ always() }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with: 
+          name: website
+          path: |
+            dist/
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with: 
+          name: deployment
+          path: |
+            dist/
+  
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+    

@@ -1,0 +1,120 @@
+@import "bootstrap";
+
+html,
+body {
+    overflow-x: hidden; /* Prevent scroll on narrow devices */
+}
+
+body {
+    padding-top: 56px;
+}
+
+@media (max-width: 991.98px) {
+    .offcanvas-collapse {
+        position: fixed;
+        top: 56px; /* Height of navbar */
+        bottom: 0;
+        left: 100%;
+        width: 100%;
+        padding-right: 1rem;
+        padding-left: 1rem;
+        overflow-y: auto;
+        visibility: hidden;
+        background-color: #343a40;
+        transition:
+            transform 0.3s ease-in-out,
+            visibility 0.3s ease-in-out;
+    }
+    .offcanvas-collapse.open {
+        visibility: visible;
+        transform: translateX(-100%);
+    }
+}
+
+.nav-scroller .nav {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.nav-scroller .nav-link {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.nav-scroller .nav-link:hover {
+    color: #007bff;
+}
+
+.nav-scroller .active {
+    font-weight: 500;
+    color: #343a40;
+}
+
+.bg-purple {
+    background-color: #6f42c1;
+}
+
+.grid {
+    display: grid;
+    grid-template-rows: repeat(var(--bs-rows, 1), 1fr);
+    grid-template-columns: repeat(var(--bs-columns, 12), 1fr);
+    gap: var(--bs-gap, 1.5rem);
+}
+
+.grid .g-col-1 {
+    grid-column: auto / span 1;
+}
+
+.grid .g-col-2 {
+    grid-column: auto / span 2;
+}
+
+.grid .g-col-3 {
+    grid-column: auto / span 3;
+}
+
+.grid .g-col-4 {
+    grid-column: auto / span 4;
+}
+
+.grid .g-col-5 {
+    grid-column: auto / span 5;
+}
+
+.grid .g-col-6 {
+    grid-column: auto / span 6;
+}
+
+.grid .g-col-7 {
+    grid-column: auto / span 7;
+}
+
+.grid .g-col-8 {
+    grid-column: auto / span 8;
+}
+
+.grid .g-col-9 {
+    grid-column: auto / span 9;
+}
+
+.grid .g-col-10 {
+    grid-column: auto / span 10;
+}
+
+.grid .g-col-11 {
+    grid-column: auto / span 11;
+}
+
+.grid .g-col-12 {
+    grid-column: auto / span 12;
+}
+
+.smufl-glyph-viewer:hover {
+    cursor: pointer;
+    background-color: var(--bs-light-bg-subtle);
+}
+
+main:not(.loading) > #loading {
+    display: none !important;
+}
