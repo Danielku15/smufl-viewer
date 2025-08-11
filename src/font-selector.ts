@@ -1,5 +1,5 @@
 import { defaultFonts, getSmuflFontMetadata } from "./smufl";
-import { createTemplate, loadingIndicator, showError, type SmuflState } from "./utils";
+import { createTemplate, loadingIndicator, type SmuflState } from "./utils";
 
 export function initFontSelector(appState: SmuflState) {
     const fontSelector = document.querySelector('#font-selector')!;
