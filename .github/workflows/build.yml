@@ -42,9 +42,9 @@ jobs:
           name: website
           path: dist/
       - uses: actions/upload-pages-artifact@v3
+        id: deployment
         if: github.ref == 'refs/heads/main'
         with: 
-          name: deployment
           path: dist/
   
   publish:
@@ -61,7 +61,6 @@ jobs:
       id-token: write
     steps:
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
 
     
