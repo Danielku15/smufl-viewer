@@ -39,14 +39,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: 
           name: website
-          path: |
-            dist/
+          path: dist/
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main'
         with: 
           name: deployment
-          path: |
-            dist/
+          path: dist/
   
   publish:
     name: Publish
