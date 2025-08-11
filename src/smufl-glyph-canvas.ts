@@ -77,16 +77,30 @@ export class SmuflGlyphCanvasElement extends HTMLElement {
         const padding = 5 * scale;
 
         let scaledBoundingBox = state.fontMetadata.glyphBBoxes[glyph.name];
-        scaledBoundingBox = {
-            bBoxNE: [
-                state.staffSpaceToPixel(scaledBoundingBox.bBoxNE[0]) * this.scale,
-                state.staffSpaceToPixel(scaledBoundingBox.bBoxNE[1]) * this.scale
-            ],
-            bBoxSW: [
-                state.staffSpaceToPixel(scaledBoundingBox.bBoxSW[0]) * this.scale,
-                state.staffSpaceToPixel(scaledBoundingBox.bBoxSW[1]) * this.scale
-            ]
+        if (scaledBoundingBox) {
+            scaledBoundingBox = {
+                bBoxNE: [
+                    state.staffSpaceToPixel(scaledBoundingBox.bBoxNE[0]) * this.scale,
+                    state.staffSpaceToPixel(scaledBoundingBox.bBoxNE[1]) * this.scale
+                ],
+                bBoxSW: [
+                    state.staffSpaceToPixel(scaledBoundingBox.bBoxSW[0]) * this.scale,
+                    state.staffSpaceToPixel(scaledBoundingBox.bBoxSW[1]) * this.scale
+                ]
+            }
+        } else {
+            scaledBoundingBox = {
+                bBoxNE: [
+                    0,
+                    0
+                ],
+                bBoxSW: [
+                    0,
+                    0
+                ]
+            }
         }
+
 
         const glyphWidth = (scaledBoundingBox.bBoxNE[0] - scaledBoundingBox.bBoxSW[0]);
         const glyphHeight = (scaledBoundingBox.bBoxNE[1] - scaledBoundingBox.bBoxSW[1]);
