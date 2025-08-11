@@ -68,7 +68,7 @@ const paths = [
         "public/smufl/fonts/sebastian/metadata.json"
     ],
     [
-        "submodules/sebastian/fonts/ofl.txt",
+        "submodules/sebastian/fonts/OFL.txt",
         "public/smufl/fonts/sebastian/license.txt"
     ]
 ];
