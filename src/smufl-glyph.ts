@@ -1,4 +1,5 @@
-import type { SmuflMetadataGlyph } from "./smufl";
+import type { SearchEventDetails } from "./search";
+import { parseCodePoint, type SmuflMetadataGlyph } from "./smufl";
 import { SmuflGlyphCanvasElement } from "./smufl-glyph-canvas";
 import { createTemplate, type SmuflState } from "./utils";
 
@@ -34,6 +35,49 @@ export class SmuflGlyphElement extends HTMLElement {
         this.#glyph = glyph;
         this.#state = state;
     }
+
+    public isSearchMatch(search: SearchEventDetails): boolean {
+        switch (search.searchType) {
+            case "":
+                return this.#isSearchMatchGlyph(search.searchText) ||
+                    this.#isSearchMatchCodepoint(search.searchText) ||
+                    this.#isSearchMatchClass(search.searchText);
+            case "glyph":
+                return this.#isSearchMatchGlyph(search.searchText);
+            case "codepoint":
+                return this.#isSearchMatchCodepoint(search.searchText);
+            case "class":
+                return this.#isSearchMatchClass(search.searchText);
+            case "range":
+                return false;
+        }
+    }
+
+    #isSearchMatchGlyph(searchText: string): boolean {
+        return this.#glyph.name.toLowerCase().includes(searchText) ||
+            this.#glyph.description.toLowerCase().includes(searchText);
+
+    }
+    #isSearchMatchCodepoint(searchText: string): boolean {
+        const codepoint = parseCodePoint(searchText);
+        return codepoint === this.#glyph.codepoint;
+    }
+
+    #isSearchMatchClass(searchText: string): boolean {
+        return this.#glyph.classes.some(c => c.toLowerCase().includes(searchText));
+    }
+
+    get isVisible(): boolean {
+        return !this.classList.contains('d-none');
+    }
+    set isVisible(v: boolean) {
+        if (v) {
+            this.classList.remove('d-none');
+        } else {
+            this.classList.add('d-none');
+        }
+    }
+
 
     get scale(): number {
         return parseFloat(this.getAttribute('scale') ?? "1");
@@ -86,7 +130,8 @@ export class SmuflGlyphElement extends HTMLElement {
         if (this.showDetails) {
             const records: [string, string][] = [
                 ['Codepoint', `U+${this.#glyph.codepoint.toString(16).toUpperCase()}`],
-                ['HTML Entity (dec)', `0x#${this.#glyph.codepoint.toString()}`]
+                ['HTML Entity (dec)', `0x#${this.#glyph.codepoint.toString()}`],
+                ['Classes', this.#glyph.classes.join(', ')]
             ];
 
 

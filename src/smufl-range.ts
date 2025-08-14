@@ -1,3 +1,4 @@
+import type { SearchEventDetails } from "./search";
 import type { SmuflMetadataRange } from "./smufl";
 import type { SmuflGlyphElement } from "./smufl-glyph";
 import { createTemplate } from "./utils";
@@ -46,22 +47,60 @@ export class SmuflRangeElement extends HTMLElement {
         }
     }
 
-    search(text: string) {
+    get isVisible(): boolean {
+        return !this.classList.contains('d-none');
+    }
+    set isVisible(v: boolean) {
+        if (v) {
+            this.classList.remove('d-none');
+        } else {
+            this.classList.add('d-none');
+        }
+    }
+
+    search(search: SearchEventDetails) {
+        // clear search
+        if (!search.searchText) {
+            for (const g of this.#glyphs) {
+                g.isVisible = true;
+            }
+            this.isVisible = true;
+            return;
+        }
+
+        switch (search.searchType) {
+            case "":
+            case "glyph":
+            case "codepoint":
+            case "class":
+                this.#searchGlyphs(search);
+                break;
+            case "range":
+                if (this.#range.name.toLowerCase().includes(search.searchText) ||
+                    this.#range.description.toLowerCase().includes(search.searchText)) {
+                    for (const g of this.#glyphs) {
+                        g.isVisible = true;
+                    }
+                    this.isVisible = true;
+                } else {
+                    this.isVisible = false;
+                }
+                break;
+        }
+    }
+
+    #searchGlyphs(search: SearchEventDetails) {
         let matches = 0;
         for (const g of this.#glyphs) {
-            if (!text || g.glyph.name.toLowerCase().includes(text)) {
-                g.classList.remove('d-none');
+            if (g.isSearchMatch(search)) {
+                g.isVisible = true;
                 matches++;
             } else {
-                g.classList.add('d-none');
+                g.isVisible = false;
             }
         }
 
-        if (matches === 0) {
-            this.classList.add('d-none');
-        } else {
-            this.classList.remove('d-none');
-        }
+        this.isVisible = matches > 0;
     }
 }
 customElements.define("smufl-range", SmuflRangeElement);

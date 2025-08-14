@@ -1,13 +1,52 @@
-import type { TypedEventTarget } from "./utils";
+import { createTemplate, type TypedEventTarget } from "./utils";
 
-export class SearchEvent extends CustomEvent<string> {
-    get searchText() {
-        return this.detail;
+const searchHelpItemTemplate = createTemplate<HTMLLIElement>(`
+    <li>
+        <span class="dropdown-item-text">
+            <span class="dropdown-item-text fw-bold search-help-label">Label</span>
+            <span class="dropdown-item-text search-help-example">Example</span>
+        </span>
+    </li>
+`);
+
+type SearchParameter = {
+    key: string;
+    label: string;
+    example: string;
+};
+
+const searchParameterDefinition: SearchParameter[] = [
+    {
+        key: 'glyph',
+        label: 'Glyph name',
+        example: 'glyph:noteheadBlack',
+    },
+    {
+        key: 'codepoint',
+        label: 'Glyph codepoint',
+        example: 'codepoint:U+E8A0',
+    },
+    {
+        key: 'class',
+        label: 'Glyph class',
+        example: 'class:noteheadSetDefault',
+    },
+    {
+        key: 'range',
+        label: 'Range name',
+        example: 'range:techniquesNoteheads',
     }
+]
 
-    constructor(searchText: string) {
+
+export const searchTypePrefixes = ['glyph', 'codepoint', 'class', 'range'] as const;
+export type SearchType = '' | (typeof searchTypePrefixes)[number];
+
+export type SearchEventDetails = { searchType: SearchType, searchText: string };
+export class SearchEvent extends CustomEvent<SearchEventDetails> {
+    constructor(detail: SearchEventDetails) {
         super('search', {
-            detail: searchText
+            detail
         })
     }
 }
@@ -16,12 +55,62 @@ export const onsearch = new EventTarget() as TypedEventTarget<{
     'search': SearchEvent;
 }>;
 
-const search = document.querySelector<HTMLInputElement>('nav input[type=search]')!;
-function doSearch(e:Event) {
-    e.preventDefault();
-    onsearch.dispatchEvent(new SearchEvent(search.value))
+const search = document.querySelector<HTMLInputElement>('.search-input')!;
+const help = document.querySelector<HTMLUListElement>('.search-help')!;
+
+for (const p of searchParameterDefinition) {
+    const item = searchHelpItemTemplate();
+
+    item.querySelector<HTMLSpanElement>('.search-help-label')!.innerText = p.label;
+    item.querySelector<HTMLSpanElement>('.search-help-example')!.innerText = p.example;
+
+    help.append(item);
+
+    item.onclick = (e) => {
+        e.stopPropagation();
+    };
 }
 
-search.onkeyup = doSearch;
-search.onchange = doSearch;
-search.oninput = doSearch;
+
+function searchFromInput(e: Event) {
+    e.preventDefault();
+    doSearch(search.value)
+}
+search.onkeyup = searchFromInput;
+search.onchange = searchFromInput;
+search.oninput = searchFromInput;
+
+export function doSearch(searchText: string) {
+    search.value = searchText;
+
+    updateSearchUrl(searchText);
+
+    let searchType: SearchType = '';
+    let searchValue = searchText.toLowerCase();
+    const typeSeparator = searchText.indexOf(':');
+    if (typeSeparator > 0) {
+        const searchTypeCandidate = searchValue.substring(0, typeSeparator);
+        if ((searchTypePrefixes as readonly string[]).includes(searchTypeCandidate)) {
+            searchType = searchTypeCandidate as SearchType;
+            searchValue = searchValue.substring(typeSeparator + 1);
+        }
+    }
+
+    onsearch.dispatchEvent(new SearchEvent({
+        searchType,
+        searchText: searchValue.trim()
+    }))
+}
+
+function updateSearchUrl(search: string) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (search) {
+        urlParams.set('search', search);
+    } else {
+        urlParams.delete('search');
+    }
+    const newRelativePathQuery = urlParams.size > 0
+        ? `${window.location.pathname}?${urlParams.toString()}`
+        : window.location.pathname;
+    history.replaceState(null, '', newRelativePathQuery);
+}

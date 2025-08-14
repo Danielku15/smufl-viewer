@@ -18,20 +18,33 @@
             <div class='navbar-collapse offcanvas-collapse'>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 </ul>
-                <ul class="navbar-nav me-1 mb-2 mb-lg-0" id="font-selector">
+                <search class="w-50">
+                    <div>
+                        <div class="input-group">
+                            <input name="searchbox" class="search-input form-control" autocomplete="off"
+                                placeholder="Search" type="search" />
+
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="fa fa-circle-info"></i>
+                            </button>
+
+                            <ul class="search-help dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <span class="dropdown-item-text fw-bold">Detailed Search:</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </search>
+                <ul class="navbar-nav me-1 mb-2 ms-auto " id="font-selector">
                     <li class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#"
                             data-bs-toggle="dropdown" aria-expanded="true">Font: <span
                                 class="font-name"></span></span></a>
-                        <ul class="dropdown-menu" data-bs-popper="static">
+                        <ul class="dropdown-menu dropdown-menu-end" data-bs-popper="static">
                         </ul>
                     </li>
                 </ul>
-                <div id="font-selector">
-
-                </div>
-                <search>
-                    <input class="form-control" type="search" placeholder="Search" aria-label="Search" />
-                </search>
             </div>
         </div>
     </nav>
@@ -56,7 +69,8 @@
 
         <div id="viewer"></div>
 
-        <div class=" modal modal-lg fade modal-dialog-centered modal-dialog-scrollable" style="display: none" id="glyph-modal" tabindex="-1">
+        <div class=" modal modal-lg fade modal-dialog-centered modal-dialog-scrollable" style="display: none"
+            id="glyph-modal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">

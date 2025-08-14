@@ -13,29 +13,29 @@ export const defaultFonts = {
         name: "Bravura",
         copyright: "Copyright © 2015, Steinberg Media Technologies GmbH (http://www.steinberg.net/)",
         license: "SIL OPEN FONT LICENSE Version 1.1",
-        font: `${import.meta.env.BASE_URL}/smufl/fonts/bravura/font.woff2`,
-        metadataUrl: `${import.meta.env.BASE_URL}/smufl/fonts/bravura/metadata.json`
+        font: `${import.meta.env.BASE_URL}smufl/fonts/bravura/font.woff2`,
+        metadataUrl: `${import.meta.env.BASE_URL}smufl/fonts/bravura/metadata.json`
     },
     leland: {
         name: "Leland",
         copyright: "Copyright (c) 2025, MuseScore BVBA (http://www.musescore.org/)",
         license: "SIL OPEN FONT LICENSE Version 1.1",
-        font: `${import.meta.env.BASE_URL}/smufl/fonts/leland/font.otf`,
-        metadataUrl: `${import.meta.env.BASE_URL}/smufl/fonts/leland/metadata.json`
+        font: `${import.meta.env.BASE_URL}smufl/fonts/leland/font.otf`,
+        metadataUrl: `${import.meta.env.BASE_URL}smufl/fonts/leland/metadata.json`
     },
     petaluma: {
         name: "Petaluma",
         copyright: "Copyright © 2018, Steinberg Media Technologies GmbH (http://www.steinberg.net/)",
         license: "SIL OPEN FONT LICENSE Version 1.1",
-        font: `${import.meta.env.BASE_URL}/smufl/fonts/petaluma/font.woff2`,
-        metadataUrl: `${import.meta.env.BASE_URL}/smufl/fonts/petaluma/metadata.json`
+        font: `${import.meta.env.BASE_URL}smufl/fonts/petaluma/font.woff2`,
+        metadataUrl: `${import.meta.env.BASE_URL}smufl/fonts/petaluma/metadata.json`
     },
     sebastian: {
         name: "Sebastian",
         copyright: "Copyright (c) 2021, Florian Kretlow and Ben Byram-Wigfield",
         license: "SIL OPEN FONT LICENSE Version 1.1",
-        font: `${import.meta.env.BASE_URL}/smufl/fonts/sebastian/font.otf`,
-        metadataUrl: `${import.meta.env.BASE_URL}/smufl/fonts/sebastian/metadata.json`
+        font: `${import.meta.env.BASE_URL}smufl/fonts/sebastian/font.otf`,
+        metadataUrl: `${import.meta.env.BASE_URL}smufl/fonts/sebastian/metadata.json`
     }
 } satisfies Record<string, SmuflFontDefinition>;
 
@@ -74,6 +74,7 @@ export type SmuflMetadataGlyph = {
     name: string;
     description: string;
     codepoint: number;
+    classes: string[];
 }
 
 export type SmuflMetadataRange = {
@@ -88,22 +89,41 @@ export type SmuflMetadata = {
     ranges: SmuflMetadataRange[];
 }
 
-function parseCodePoint(codepoint: string): number {
+export function parseCodePoint(codepoint: string): number {
     if (codepoint.startsWith('U+')) {
         return parseInt(codepoint.substring(2), 16);
     }
+
+    if (codepoint.startsWith('0x#')) {
+        return parseInt(codepoint.substring(3), 16);
+    }
+
     return parseInt(codepoint);
 }
 
 async function loadSmuflMetadata(): Promise<SmuflMetadata> {
     const files = await Promise.all([
-        axios.get<SmuflRanges>(`${import.meta.env.BASE_URL}/smufl/ranges.json`),
-        axios.get<SmuflGlyphNames>(`${import.meta.env.BASE_URL}/smufl/glyphnames.json`),
+        axios.get<SmuflRanges>(`${import.meta.env.BASE_URL}smufl/ranges.json`),
+        axios.get<SmuflGlyphNames>(`${import.meta.env.BASE_URL}smufl/glyphnames.json`),
+        axios.get<SmuflClasses>(`${import.meta.env.BASE_URL}smufl/classes.json`),
     ]);
 
     const result: SmuflMetadata = {
         ranges: []
     };
+
+    const classesForGlyph = new Map<string, Set<string>>();
+    for (const [className, glyphNames] of Object.entries(files[2].data)) {
+        for (const g of glyphNames) {
+            let classes = classesForGlyph.get(g);
+            if (!classes) {
+                classes = new Set<string>();
+                classesForGlyph.set(g, classes)
+            }
+
+            classes.add(className);
+        }
+    }
 
     for (const [rangeName, rangeData] of Object.entries(files[0].data)) {
         const range: SmuflMetadataRange = {
@@ -122,7 +142,8 @@ async function loadSmuflMetadata(): Promise<SmuflMetadata> {
             const glyph: SmuflMetadataGlyph = {
                 name: glyphName,
                 codepoint: parseCodePoint(glyphData.codepoint),
-                description: glyphData.description
+                description: glyphData.description,
+                classes: Array.from(classesForGlyph.get(glyphName) ?? []).sort()
             };
             range.glyphs.push(glyph);
         }
