@@ -1,7 +1,7 @@
 import { Modal } from "bootstrap";
 import { initFontSelector } from "./font-selector";
-import { onsearch } from "./search";
-import { defaultFonts, getSmuflMetadata, loadSmuflFontMetadata } from "./smufl";
+import { doSearch, onsearch } from "./search";
+import { defaultFonts, getSmuflMetadata, loadSmuflFontMetadata, type SmuflMetadataGlyph } from "./smufl";
 import { SmuflGlyphElement } from "./smufl-glyph";
 import { SmuflRangeElement } from "./smufl-range";
 import { initStatistics } from "./statistics";
@@ -40,20 +40,7 @@ function showGlyphs() {
             const glyphElement = new SmuflGlyphElement(glyph, appState);
             glyphElement.classList.add('g-col-6', 'align-items-center', 'smufl-glyph-viewer', 'rounded')
             glyphElement.onclick = () => {
-                const el = document.querySelector<HTMLDivElement>('#glyph-modal')!;
-                el.querySelector<HTMLElement>('.modal-title')!.innerText = glyph.name;
-                const modal = new Modal(el);
-
-                const detailed = new SmuflGlyphElement(glyph, appState);
-                detailed.scale = 2;
-                detailed.showAnchorText = true;
-                detailed.showDetails = true;
-                const body = el.querySelector<HTMLDivElement>('.modal-body')!;
-                body.textContent = '';
-                body.append(detailed);
-
-
-                modal.show();
+                openGlyphModal(glyph);
             };
             rangeElement.addGlyph(glyphElement);
         }
@@ -62,11 +49,26 @@ function showGlyphs() {
     }
 }
 
+function openGlyphModal(glyph: SmuflMetadataGlyph) {
+    const el = document.querySelector<HTMLDivElement>('#glyph-modal')!;
+    el.querySelector<HTMLElement>('.modal-title')!.innerText = glyph.name;
+    const modal = new Modal(el);
+
+    const detailed = new SmuflGlyphElement(glyph, appState);
+    detailed.scale = 2;
+    detailed.showAnchorText = true;
+    detailed.showDetails = true;
+    const body = el.querySelector<HTMLDivElement>('.modal-body')!;
+    body.textContent = '';
+    body.append(detailed);
+
+    modal.show();
+}
+
 onsearch.addEventListener('search', (e) => {
-    const searchText = e.searchText.toLowerCase();
     for (const c of viewer.children) {
         if (c instanceof SmuflRangeElement) {
-            c.search(searchText);
+            c.search(e.detail);
         }
     }
 });
@@ -76,3 +78,15 @@ await load();
 
 initFontSelector(appState)
 initStatistics(appState)
+
+
+const initialSearch = new URL(window.location.href).searchParams.get('search');
+
+if (initialSearch) {
+    doSearch(initialSearch);
+    // search should be applied already, check if there is only glyph found
+    const visibleGlyphs = Array.from(viewer.querySelectorAll<SmuflGlyphElement>('smufl-glyph')).filter(e => e.isVisible);
+    if (visibleGlyphs.length > 0) {
+        openGlyphModal(visibleGlyphs[0].glyph);
+    }
+}

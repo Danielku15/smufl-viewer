@@ -1,46 +1,43 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.1.3/schema.json",
-	"vcs": {
-		"enabled": false,
-		"clientKind": "git",
-		"useIgnoreFile": false
-	},
-	"files": {
-		"ignoreUnknown": false
-	},
-	"formatter": {
-		"enabled": true,
-		"formatWithErrors": true,
+    "$schema": "https://biomejs.dev/schemas/2.1.3/schema.json",
+    "vcs": {
+        "enabled": false,
+        "clientKind": "git",
+        "useIgnoreFile": false
+    },
+    "files": {
+        "ignoreUnknown": false
+    },
+    "formatter": {
+        "enabled": true,
+        "formatWithErrors": true,
         "attributePosition": "auto",
         "indentStyle": "space",
         "indentWidth": 4,
         "lineWidth": 120,
         "lineEnding": "lf"
-	},
-	"linter": {
-		"enabled": true,
-		"includes": [
-			"./*.*",
-			"./src/**"
-		],
-		"rules": {
-			"recommended": true,
-			"style": {
-				"noNonNullAssertion": "off"
-			}
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "double"
-		}
-	},
-	"assist": {
-		"enabled": true,
-		"actions": {
-			"source": {
-				"organizeImports": "on"
-			}
-		}
-	}
+    },
+    "linter": {
+        "enabled": true,
+        "includes": ["./*.*", "./src/**"],
+        "rules": {
+            "recommended": true,
+            "style": {
+                "noNonNullAssertion": "off"
+            }
+        }
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "double"
+        }
+    },
+    "assist": {
+        "enabled": true,
+        "actions": {
+            "source": {
+                "organizeImports": "on"
+            }
+        }
+    }
 }
