@@ -90,7 +90,8 @@ export type SmuflMetadata = {
 }
 
 export function parseCodePoint(codepoint: string): number {
-    if (codepoint.startsWith('U+')) {
+    codepoint = codepoint.toLocaleLowerCase();
+    if (codepoint.startsWith('u+')) {
         return parseInt(codepoint.substring(2), 16);
     }
 

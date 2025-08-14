@@ -9,8 +9,11 @@ const searchHelpItemTemplate = createTemplate<HTMLLIElement>(`
     </li>
 `);
 
+export const searchTypePrefixes = ['glyph', 'codepoint', 'class', 'range'] as const;
+export type SearchType = '' | (typeof searchTypePrefixes)[number];
+
 type SearchParameter = {
-    key: string;
+    key: SearchType;
     label: string;
     example: string;
 };
@@ -39,8 +42,6 @@ const searchParameterDefinition: SearchParameter[] = [
 ]
 
 
-export const searchTypePrefixes = ['glyph', 'codepoint', 'class', 'range'] as const;
-export type SearchType = '' | (typeof searchTypePrefixes)[number];
 
 export type SearchEventDetails = { searchType: SearchType, searchText: string };
 export class SearchEvent extends CustomEvent<SearchEventDetails> {
