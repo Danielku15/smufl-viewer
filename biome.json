@@ -24,7 +24,10 @@
             "recommended": true,
             "style": {
                 "noNonNullAssertion": "off"
-            }
+            },
+			"correctness":{
+				"noSwitchDeclarations": "off"
+			}
         }
     },
     "javascript": {

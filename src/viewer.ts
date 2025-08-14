@@ -86,7 +86,7 @@ if (initialSearch) {
     doSearch(initialSearch);
     // search should be applied already, check if there is only glyph found
     const visibleGlyphs = Array.from(viewer.querySelectorAll<SmuflGlyphElement>('smufl-glyph')).filter(e => e.isVisible);
-    if (visibleGlyphs.length > 0) {
+    if (visibleGlyphs.length === 1) {
         openGlyphModal(visibleGlyphs[0].glyph);
     }
 }

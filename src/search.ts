@@ -22,7 +22,7 @@ const searchParameterDefinition: SearchParameter[] = [
     {
         key: 'glyph',
         label: 'Glyph name',
-        example: 'glyph:noteheadBlack',
+        example: 'glyph:"noteheadBlack"',
     },
     {
         key: 'codepoint',
@@ -32,7 +32,7 @@ const searchParameterDefinition: SearchParameter[] = [
     {
         key: 'class',
         label: 'Glyph class',
-        example: 'class:noteheadSetDefault',
+        example: 'class:noteheadSet',
     },
     {
         key: 'range',
@@ -43,7 +43,8 @@ const searchParameterDefinition: SearchParameter[] = [
 
 
 
-export type SearchEventDetails = { searchType: SearchType, searchText: string };
+export type SearchEventOperator = 'contains' | 'equals';
+export type SearchEventDetails = { searchType: SearchType, searchText: string, searchOperator: SearchEventOperator };
 export class SearchEvent extends CustomEvent<SearchEventDetails> {
     constructor(detail: SearchEventDetails) {
         super('search', {
@@ -88,6 +89,7 @@ export function doSearch(searchText: string) {
 
     let searchType: SearchType = '';
     let searchValue = searchText.toLowerCase();
+    let searchOperator: SearchEventOperator = 'contains';
     const typeSeparator = searchText.indexOf(':');
     if (typeSeparator > 0) {
         const searchTypeCandidate = searchValue.substring(0, typeSeparator);
@@ -97,9 +99,17 @@ export function doSearch(searchText: string) {
         }
     }
 
+    if (searchValue.startsWith('"') && searchValue.endsWith('"') ||
+        searchValue.startsWith("'") && searchValue.endsWith("'")
+    ) {
+        searchOperator = 'equals'
+        searchValue = searchValue.substring(1, searchValue.length - 1);
+    }
+
     onsearch.dispatchEvent(new SearchEvent({
         searchType,
-        searchText: searchValue.trim()
+        searchText: searchValue.trim(),
+        searchOperator
     }))
 }
 
@@ -114,4 +124,14 @@ function updateSearchUrl(search: string) {
         ? `${window.location.pathname}?${urlParams.toString()}`
         : window.location.pathname;
     history.replaceState(null, '', newRelativePathQuery);
+}
+
+
+export function isSearchMatch(details: SearchEventDetails, value: string) {
+    switch (details.searchOperator) {
+        case "contains":
+            return value.toLowerCase().includes(details.searchText);
+        case "equals":
+            return value.toLowerCase() === details.searchText;
+    }
 }

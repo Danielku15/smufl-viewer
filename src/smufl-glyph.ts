@@ -1,4 +1,4 @@
-import type { SearchEventDetails } from "./search";
+import { isSearchMatch, type SearchEventDetails } from "./search";
 import { parseCodePoint, type SmuflMetadataGlyph } from "./smufl";
 import { SmuflGlyphCanvasElement } from "./smufl-glyph-canvas";
 import { createTemplate, type SmuflState } from "./utils";
@@ -39,32 +39,42 @@ export class SmuflGlyphElement extends HTMLElement {
     public isSearchMatch(search: SearchEventDetails): boolean {
         switch (search.searchType) {
             case "":
-                return this.#isSearchMatchGlyph(search.searchText) ||
-                    this.#isSearchMatchCodepoint(search.searchText) ||
-                    this.#isSearchMatchClass(search.searchText);
+                return this.#isSearchMatchGlyph(search) ||
+                    this.#isSearchMatchCodepoint(search) ||
+                    this.#isSearchMatchClass(search);
             case "glyph":
-                return this.#isSearchMatchGlyph(search.searchText);
+                return this.#isSearchMatchGlyph(search);
             case "codepoint":
-                return this.#isSearchMatchCodepoint(search.searchText);
+                return this.#isSearchMatchCodepoint(search);
             case "class":
-                return this.#isSearchMatchClass(search.searchText);
+                return this.#isSearchMatchClass(search);
             case "range":
                 return false;
         }
     }
 
-    #isSearchMatchGlyph(searchText: string): boolean {
-        return this.#glyph.name.toLowerCase().includes(searchText) ||
-            this.#glyph.description.toLowerCase().includes(searchText);
+    #isSearchMatchGlyph(search: SearchEventDetails): boolean {
+        return isSearchMatch(search, this.#glyph.name) ||
+            isSearchMatch(search, this.#glyph.description);
 
     }
-    #isSearchMatchCodepoint(searchText: string): boolean {
-        const codepoint = parseCodePoint(searchText);
-        return codepoint === this.#glyph.codepoint;
+    #isSearchMatchCodepoint(search: SearchEventDetails): boolean {
+        switch (search.searchOperator) {
+            case "contains":
+                const glyphCodepointText = `u+${this.#glyph.codepoint.toString(16).toLowerCase()}`;
+                return isSearchMatch(search, glyphCodepointText);
+            case "equals":
+                const inputCodePoint = parseCodePoint(search.searchText);
+                if (Number.isNaN(inputCodePoint)) {
+                    return false;
+                }
+                return inputCodePoint === this.#glyph.codepoint;
+        }
+
     }
 
-    #isSearchMatchClass(searchText: string): boolean {
-        return this.#glyph.classes.some(c => c.toLowerCase().includes(searchText));
+    #isSearchMatchClass(search: SearchEventDetails): boolean {
+        return this.#glyph.classes.some(c => isSearchMatch(search, c));
     }
 
     get isVisible(): boolean {

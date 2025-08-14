@@ -1,4 +1,4 @@
-import type { SearchEventDetails } from "./search";
+import { isSearchMatch, type SearchEventDetails } from "./search";
 import type { SmuflMetadataRange } from "./smufl";
 import type { SmuflGlyphElement } from "./smufl-glyph";
 import { createTemplate } from "./utils";
@@ -76,8 +76,8 @@ export class SmuflRangeElement extends HTMLElement {
                 this.#searchGlyphs(search);
                 break;
             case "range":
-                if (this.#range.name.toLowerCase().includes(search.searchText) ||
-                    this.#range.description.toLowerCase().includes(search.searchText)) {
+                if (isSearchMatch(search, this.#range.name) ||
+                    isSearchMatch(search, this.#range.description)) {
                     for (const g of this.#glyphs) {
                         g.isVisible = true;
                     }
