@@ -1,5 +1,5 @@
 import type { SmuflMetadataGlyph } from "./smufl";
-import { createTemplate, type SmuflState } from "./utils";
+import { createTemplate, unvirtualize, virtualize, type IVirtualizable, type SmuflState } from "./utils";
 
 function fillRect(x: number, y: number, w: number, h: number, fill: string) {
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -30,9 +30,10 @@ const missingGlyphTemplate = createTemplate<HTMLSpanElement>(`
     <span class="text-danger">(glyph missing)</span>
 `)
 
-export class SmuflGlyphCanvasElement extends HTMLElement {
+export class SmuflGlyphCanvasElement extends HTMLElement implements IVirtualizable {
     #glyph: SmuflMetadataGlyph;
     #state: SmuflState;
+    #svg?: SVGSVGElement;
 
     constructor(glyph: SmuflMetadataGlyph, state: SmuflState) {
         super();
@@ -58,6 +59,21 @@ export class SmuflGlyphCanvasElement extends HTMLElement {
 
     set scale(val: number) {
         this.setAttribute('scale', String(val));
+    }
+
+    show() {
+        this.innerText = '';
+        const svg = this.#svg!;
+        if (svg) {
+            this.append(svg);
+        }
+    }
+
+    hide() {
+        const svg = this.#svg!;
+        if (svg) {
+            svg.remove();
+        }
     }
 
     update() {
@@ -107,6 +123,8 @@ export class SmuflGlyphCanvasElement extends HTMLElement {
 
         const canvasWidth = padding * 2 + glyphWidth;
         const canvasHeight = padding * 2 + glyphHeight;
+        this.style.width = `${canvasWidth}px`;
+        this.style.height = `${canvasHeight}px`;
 
         const glyphCenterX = -scaledBoundingBox.bBoxSW[0] + padding;
         const glyphCenterY = scaledBoundingBox.bBoxNE[1] + padding;
@@ -186,10 +204,19 @@ export class SmuflGlyphCanvasElement extends HTMLElement {
         }
 
         this.textContent = '';
-        this.appendChild(svg);
+
+        const oldSvg = this.#svg;
+        this.#svg = svg;
+
+        // element is currently visible, direclty add the SVG, otherwise the intersection observer will add it later
+        if (oldSvg?.parentElement) {
+            this.appendChild(svg);
+        }
     }
 
     connectedCallback() {
+        virtualize(this);
+
         this.#state.addEventListener('changed', () => {
             this.update();
         });
@@ -197,5 +224,8 @@ export class SmuflGlyphCanvasElement extends HTMLElement {
         this.update();
     }
 
+    disconnectedCallback() {
+        unvirtualize(this);
+    }
 }
 customElements.define("smufl-glyph-canvas", SmuflGlyphCanvasElement);

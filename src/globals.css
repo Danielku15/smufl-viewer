@@ -1,5 +1,5 @@
 @import "bootstrap";
-@import '@fortawesome/fontawesome-free/css/all.css';
+@import "@fortawesome/fontawesome-free/css/all.css";
 
 html,
 body {
@@ -136,4 +136,8 @@ search-box .search-parameter input {
 search-box .parameter-suggestions {
     position: absolute;
     width: 100%;
+}
+
+smufl-glyph-canvas {
+    display: inline-block;
 }

@@ -4,18 +4,19 @@ import type { SmuflGlyphElement } from "./smufl-glyph";
 import { createTemplate } from "./utils";
 
 
-const headingTemplate = createTemplate<HTMLHeadingElement>(`
-    <h3 class="border-bottom pb-2 mb-2"><span class="range-title"></span> <span class="text-secondary range-info">({range.name}, {range.start} - {range.end})</span></h3>
-`)
-
-const gridTemplate = createTemplate<HTMLDivElement>(`
-    <div class="grid">
+const template = createTemplate<HTMLDivElement>(`
+    <div class="body">
+        <h3 class="border-bottom pb-2 mb-2"><span class="range-title"></span> <span class="text-secondary range-info">({range.name}, {range.start} - {range.end})</span></h3>
+        <div class="grid">
+        </div>
     </div>
 `);
 
 export class SmuflRangeElement extends HTMLElement {
     #range: SmuflMetadataRange;
     #glyphs: SmuflGlyphElement[] = [];
+
+    #body!: HTMLDivElement;
 
     constructor(range: SmuflMetadataRange) {
         super();
@@ -24,21 +25,21 @@ export class SmuflRangeElement extends HTMLElement {
     }
 
     connectedCallback() {
-        const heading = headingTemplate();
+        const body = template();
+        this.#body = body;
 
-        heading.querySelector<HTMLSpanElement>('.range-title')!.innerText = this.#range.description;
-        heading.querySelector<HTMLSpanElement>('.range-info')!.innerText = `(${this.#range.name}, ${this.#range.start} - ${this.#range.end})`;
+        body.querySelector<HTMLSpanElement>('.range-title')!.innerText = this.#range.description;
+        body.querySelector<HTMLSpanElement>('.range-info')!.innerText = `(${this.#range.name}, ${this.#range.start} - ${this.#range.end})`;
 
-        this.appendChild(heading);
 
-        const grid = gridTemplate();
+        const grid = body.querySelector<HTMLDivElement>('.grid')!;
 
         for (const g of this.#glyphs) {
             grid.appendChild(g);
         }
-
-        this.appendChild(grid);
+        this.appendChild(this.#body);
     }
+
 
     addGlyph(glyph: SmuflGlyphElement) {
         this.#glyphs.push(glyph);
@@ -50,6 +51,7 @@ export class SmuflRangeElement extends HTMLElement {
     get isVisible(): boolean {
         return !this.classList.contains('d-none');
     }
+
     set isVisible(v: boolean) {
         if (v) {
             this.classList.remove('d-none');

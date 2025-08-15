@@ -117,3 +117,34 @@ export async function loadingIndicator(action: () => Promise<void>) {
         main.classList.remove('loading')
     }
 }
+
+export interface IVirtualizable {
+    show(): void;
+    hide(): void;
+}
+
+export type Virtualizable = Element & IVirtualizable
+
+let visibilityObserver: IntersectionObserver | undefined;
+function checkVisibility(entries: IntersectionObserverEntry[]) {
+    for (const e of entries) {
+        if (e.isIntersecting) {
+            (e.target as unknown as IVirtualizable).show();
+        } else {
+            (e.target as unknown as IVirtualizable).hide();
+        }
+    }
+}
+
+export function virtualize(virtualize: Virtualizable) {
+    let observer = visibilityObserver;
+    if (!observer) {
+        observer = new IntersectionObserver(checkVisibility, {
+        })
+    }
+    observer.observe(virtualize)
+}
+
+export function unvirtualize(virtualize: Virtualizable) {
+    visibilityObserver?.unobserve(virtualize)
+}
